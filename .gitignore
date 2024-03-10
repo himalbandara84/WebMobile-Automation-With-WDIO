@@ -1,0 +1,12 @@
+node_modules
+allure-report
+allure-results
+
+.DS_Store
+.vscode/*.*
+test/resources/reports/testresults.xml
+test/*/.DS_Store
+.env
+test/**/testresults.html
+.vscode/launch.json
+

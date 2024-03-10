@@ -1,0 +1,69 @@
+# Node.js
+# Build a general Node.js project with npm.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+# Trigger this pipeline based on Web, API & Mobile DIT Pipeline
+resources:
+  pipelines:
+    - pipeline: previous-pipeline-trigger
+      source: "[Digital Inspection Tool] Web - Staging & Prod"
+      project: "ACO"
+      trigger: true
+
+trigger:
+  - main
+
+variables:
+  - group: digitalinspectiontool-e2e
+
+jobs:
+  - job: e2e_job
+    timeoutInMinutes: 180
+    pool:
+      vmImage: macOS-13
+
+    steps:
+      - task: Npm@1
+        displayName: "npm cache clean"
+        inputs:
+          command: "custom"
+          customCommand: "cache clear --f"
+
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "16.x"
+        displayName: "Install Node.js"
+
+      - script: |
+          npm config set registry https://registry.npmjs.org/
+          npm install
+        displayName: "npm install"
+
+      - script: |
+          npm install wdio-junit-to-html -g
+        displayName: "install junit-html globally"
+
+      - script: |
+          npm run test-regression-web
+        displayName: "Run test framework"
+        env:
+          WEB_USER_SECRET: $(DIT-Scope-Manager)
+          MOBILE_USER_SECRET: $(DIT-Supervisor)
+          LINE_MANAGER_SECRET: $(DIT-Line-Manager)
+          PAT: $(PAT)
+        continueOnError: true
+
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: "JUnit"
+          testResultsFiles: "test/resources/reports/testresults.xml"
+
+      - task: PublishBuildArtifacts@1
+        inputs:
+          pathtoPublish: "test/resources/screenshots/"
+          artifactName: "screenshots"
+
+      - script: |
+          echo "Screenshots can be accessed at: $(System.ArtifactsUri)/screenshots"
+        displayName: "Display Screenshots URL"

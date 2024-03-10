@@ -1,0 +1,121 @@
+# Node.js
+# Build a general Node.js project with npm.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+# Trigger this pipeline based on Web, API & Mobile DIT Pipeline
+esources:
+  pipelines:
+    - pipeline: DIT-Mobile
+      source: "[Renamed Source] Mobile - Staging"
+      trigger: true
+
+variables:
+  - group: digitalinspectiontool-e2e
+  # IT BA - Custom Application
+  - name: ProjectId
+    value: "12345678-abcd-efgh-ijkl-1234567890ab"
+  # [Renamed Source] Mobile - Staging
+  - name: PipelineId
+    value: "9876"
+  # Artifact Name of the other pipeline
+  - name: PipelineArtifactName
+    value: "drop/Production"
+  # .app file application name
+  - name: AppName
+    value: "MyDigitalInspectionApp"
+
+jobs:
+  - job: e2e_job
+    timeoutInMinutes: 300
+    pool:
+      vmImage: macOS-13
+
+    steps:
+      - script: |
+          sudo xcode-select -s /Applications/Xcode_14.3.1.app
+        displayName: Selects a specific version of Xcode
+
+      - task: DownloadBuildArtifacts@1
+        inputs:
+          buildType: "specific"
+          project: $(ProjectId)
+          pipeline: $(PipelineId)
+          buildVersionToDownload: "latest"
+          downloadType: "single"
+          artifactName: $(PipelineArtifactName)
+          itemPattern: "**/*.tar.gz"
+          downloadPath: "$(System.ArtifactsDirectory)"
+
+      - task: CmdLine@2
+        displayName: "Make app folder"
+        inputs:
+          script: mkdir $(Pipeline.Workspace)/s/test/resources/app
+
+      # Unzip the downloaded .app file in the artifact folder into the e2e test app folder
+      - task: CmdLine@2
+        displayName: "Unzip .app file to /app folder"
+        inputs:
+          workingDirectory: "$(System.ArtifactsDirectory)/$(PipelineArtifactName)"
+          script: tar -xvzf $(AppName).tar.gz -C $(Pipeline.Workspace)/s/test/resources/app
+
+      - task: CmdLine@2
+        displayName: "show current registry"
+        inputs:
+          script: pwd
+      - task: CmdLine@2
+        displayName: "Show app file"
+        inputs:
+          script: ls $(Pipeline.Workspace)/s/test/resources/app
+
+      - task: Npm@1
+        displayName: "npm cache clean"
+        inputs:
+          command: "custom"
+          customCommand: "cache clear --f"
+
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "16.x"
+        displayName: "Install Node.js"
+
+      - script: |
+          npm config set registry https://registry.npmjs.org/
+          npm install
+        displayName: "npm install"
+
+      - script: |
+          npm install wdio-junit-to-html -g
+        displayName: "install junit-html globally"
+
+      - script: |
+          npm install -g appium@next
+        displayName: "appium install"
+
+      - script: |
+          appium driver install xcuitest@4.34.0
+        displayName: "appium xcuitest install"
+
+      - script: |
+          npm run test-regression-mobile
+        displayName: "Run test-regression-mobile"
+        env:
+          WEB_USER_SECRET: $(DIT-Scope-Manager)
+          MOBILE_USER_SECRET: $(DIT-Supervisor)
+          LINE_MANAGER_SECRET: $(DIT-Line-Manager)
+          PAT: $(PAT)
+        continueOnError: true
+
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: "JUnit"
+          testResultsFiles: "test/resources/reports/testresults.xml"
+
+      - task: PublishBuildArtifacts@1
+        inputs:
+          pathtoPublish: "test/resources/screenshots/"
+          artifactName: "screenshots"
+
+      - script: |
+          echo "Screenshots can be accessed at: $(System.ArtifactsUri)/screenshots"
+        displayName: "Display Screenshots URL"
