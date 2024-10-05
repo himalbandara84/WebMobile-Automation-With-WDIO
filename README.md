@@ -1,79 +1,91 @@
-#[Digital Inspection Tool][web & mobile] E2E Automation Framework
 
-# Introduction
+# E2E Automation Framework
 
-This Automation Framework will cover both DIT mobile and DIT web applications test using the WebdriverIO framework.WebdriverIO is an all-in-one framework for your web app development. It enables you to run small and lightweight component tests as well as run e2e test scenarios in the browser or on a mobile device. This guarantees that you to do the testing in an environment used by your users.
+## Introduction
 
-# Getting Started
+This Automation Framework is designed for testing both web and mobile applications using the WebdriverIO framework. WebdriverIO is an all-in-one solution for web app development testing. It enables you to run lightweight component tests as well as full end-to-end test scenarios in browsers or on mobile devices, ensuring that testing occurs in the same environment as your users.
 
-1. Installation process
+## Getting Started
 
-Clone the project using Git Clone and run the following command (prerequisite: Install Node.js https://nodejs.org/en/)
-<code>npm install</code>.
+1. **Installation Process**
+   
+   Clone the repository using Git and run the following command (prerequisite: Install Node.js from [Node.js](https://nodejs.org/en/)):
+   ```
+   npm install
+   ```
 
-# Build and Test
+## Build and Test
 
-## Build and Test Web
+### Build and Test Web
 
-1. Creating Script under ./specs folder .
-2. Creating PageObject under test/page-objectsweb-page-objects.
-3. Add test data to the test/resources/test-data and create the variable in the test/specs/test-configuration.ts and use in the script
-4. Go to the config file and under any suite or create new suite
-5. Run in the command line
-   <code>ENV=stg RTYPE=web npx wdio run test/wdio.conf.ts --suite e2e && wdio-junit-to-html -i ./test/resources/reports/ -o ./test/resources/reports/</code>
+1. Create test scripts under the `./specs` folder.
+2. Create PageObjects under `test/page-objects/web-page-objects`.
+3. Add test data to `test/resources/test-data` and create variables in `test/specs/test-configuration.ts` to use in the script.
+4. Go to the configuration file and edit or create a new test suite.
+5. Run the following command in the terminal:
+   ```
+   ENV=stg RTYPE=web npx wdio run test/wdio.conf.ts --suite e2e && wdio-junit-to-html -i ./test/resources/reports/ -o ./test/resources/reports/
+   ```
 
-Env = Environment [stg,qa]
-RTYPE = Resource type like web or mobile
-suite = [suite name given by you]
-wdio-junit-to-himtl = test result -i means input -o means html output
+   - `ENV` = Environment (e.g., `stg`, `qa`)
+   - `RTYPE` = Resource type (e.g., `web`, `mobile`)
+   - `suite` = The name of the test suite.
+   - `wdio-junit-to-html` = Converts test results into HTML (`-i` is input, `-o` is HTML output)
 
-Simply you can include in th package json under the <code>npm test</code>
+You can also include this command in `package.json` under `npm test`.
 
-## Web Run in the Pipline
+### Web Run in the Pipeline
 
-### Automatic trigger
+#### Automatic Trigger
 
-Digital Inspection Tool][Web & Mobile] E2E - Staging pipline automtically trigger after Digital Inspection Tool][Web & Mobile] E2E - Staging run
+The web end-to-end pipeline is automatically triggered after the successful run of related pipelines.
 
-### Manual trigger
+#### Manual Trigger
 
-Users can manually trigger the pipline buy going to the Digital Inspection Tool][Web & Mobile] E2E enter run
+Users can manually trigger the pipeline by navigating to the pipeline's UI and starting the run.
 
-## Build and Test Web/Mobile
+### Build and Test Web/Mobile
 
-1. Creating Script under ./specs folder .
-2. Creating Web PageObject under test/page-objectsweb-page-objects and Mobile Page object under test/page-objects/mobile-page-objects .
-3. Add test data to the test/resources/test-data and create the variable in the test/specs/test-configuration.ts and use in the script
-4. Go to the config file and under any suite or create new suite
-5. Run in the command line
-   <code>ENV=stg RTYPE=both npx wdio run test/wdio.conf.ts --suite e2e && wdio-junit-to-html -i ./test/resources/reports/ -o ./test/resources/reports/</code>
+1. Create test scripts under the `./specs` folder.
+2. Create Web PageObjects under `test/page-objects/web-page-objects` and Mobile PageObjects under `test/page-objects/mobile-page-objects`.
+3. Add test data to `test/resources/test-data` and create variables in `test/specs/test-configuration.ts` to use in the script.
+4. Go to the configuration file and edit or create a new test suite.
+5. Run the following command in the terminal:
+   ```
+   ENV=stg RTYPE=both npx wdio run test/wdio.conf.ts --suite e2e && wdio-junit-to-html -i ./test/resources/reports/ -o ./test/resources/reports/
+   ```
 
-Env = Environment [stg,qa]
-RTYPE = Resource type like web or mobile this case we give both
-suite = [suite name given by you]
-wdio-junit-to-himtl = test result -i means input -o means html output
+   - `ENV` = Environment (e.g., `stg`, `qa`)
+   - `RTYPE` = Resource type (e.g., `web`, `mobile`, or `both`)
+   - `suite` = The name of the test suite.
+   - `wdio-junit-to-html` = Converts test results into HTML (`-i` is input, `-o` is HTML output)
 
-Simply you can include in th package json under the <code>npm test</code>
+You can also include this command in `package.json` under `npm test`.
 
-## Web Run in the Pipline
+### Mobile Run in the Pipeline
 
-### Automatic trigger
+#### Automatic Trigger
 
-still, there is no automatic trigger for the mobile pipeline.
+Currently, there is no automatic trigger for the mobile pipeline.
 
-### Manual trigger
+#### Manual Trigger
 
-1. build an IPA file using the Xcode project to run on iPhone 13(15.0)
-2. Clone the Automation Project
-3. Go to the following folder test/resources/app
-4. remove the app if there and paste the new IPA
-5. Go to the test/resources/capabilites.ts
-6. Change the "appium:app": path with a new path.
-7. save and use <code>git add && git commit -m "new message"&& git push</code>
-8. The pipeline will automatically trigger
+1. Build the IPA file using Xcode to run on the desired device (e.g., iPhone 13 with iOS 15.0).
+2. Clone the automation repository.
+3. Navigate to the `test/resources/app` folder.
+4. Remove the old app file and replace it with the new IPA file.
+5. Update the app path in `test/resources/capabilities.ts` (i.e., `"appium:app": "new/path/to/ipa"`).
+6. Save the changes and push them using:
+   ```
+   git add && git commit -m "new message" && git push
+   ```
+7. The pipeline will automatically trigger.
 
-# Resource
+## Resources
 
 - [Webdriver.io](https://webdriver.io/)
 - [Appium](https://appium.io/)
 - [TypeScript](https://www.typescriptlang.org/)
+```
+
+You can copy this and place it in your `README.md` file for your project.
